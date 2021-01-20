@@ -6,6 +6,7 @@ from Coach import Coach
 from go.GoGame import GoGame as Game
 from go.pytorch.NNet import NNetWrapper as nn
 from utils import *
+import numpy as np
 
 log = logging.getLogger(__name__)
 
@@ -30,6 +31,9 @@ args = dotdict({
 
 
 def main():
+    
+    np.random.seed(123)
+    
     log.info('Loading %s...', Game.__name__)
     g = Game(6)
 
