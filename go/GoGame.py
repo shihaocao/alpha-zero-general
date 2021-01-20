@@ -93,6 +93,8 @@ class GoGame(Game):
                 return self.reward
             else:
                 return -self.reward
+        else:
+            return 0
 
     def getCanonicalForm(self, board, player):
         # return state if player==1, else return -state if player==-1
@@ -115,7 +117,7 @@ class GoGame(Game):
         return l
 
     def stringRepresentation(self, board):
-        return "".join(int(x) for x in board.flatten())
+        return "".join([str(x) for x in board.astype(dtype=int).flatten()])
         # CAN COLLAPSE INDICATOR LAYERS
 
     def stringRepresentationReadable(self, board):
