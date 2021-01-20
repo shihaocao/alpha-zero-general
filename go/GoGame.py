@@ -30,10 +30,11 @@ class GoGame(Game):
         self.info = None
         
         self.flat_move_size = int(n*n)+1
+        self.state = self.env.reset()
         
     def getInitBoard(self):
         # return initial board (numpy board)
-        self.state = self.env.reset()
+        
         return self.state
 
     def getBoardSize(self):
@@ -114,7 +115,8 @@ class GoGame(Game):
         return l
 
     def stringRepresentation(self, board):
-        return board.tostring()
+        return "".join(int(x) for x in board.flatten())
+        # CAN COLLAPSE INDICATOR LAYERS
 
     def stringRepresentationReadable(self, board):
         board_s = "".join(self.square_content[square] for row in board for square in row)
