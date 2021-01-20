@@ -3,8 +3,8 @@ import logging
 import coloredlogs
 
 from Coach import Coach
-from go.OthelloGame import OthelloGame as Game
-from go.tensorflow.NNet import NNetWrapper as nn
+from go.GoGame import GoGame as Game
+from go.pytorch.NNet import NNetWrapper as nn
 from utils import *
 
 log = logging.getLogger(__name__)

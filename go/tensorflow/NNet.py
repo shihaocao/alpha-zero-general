@@ -27,11 +27,12 @@ class NNetWrapper(NeuralNet):
         self.board_x, self.board_y = game.getBoardSize()
         self.action_size = game.getActionSize()
 
-        self.sess = tf.Session(graph=self.nnet.graph)
+        self.sess = tf.compat.v1.Session(graph=self.nnet.graph)
         self.saver = None
-        with tf.Session() as temp_sess:
-            temp_sess.run(tf.global_variables_initializer())
-        self.sess.run(tf.variables_initializer(self.nnet.graph.get_collection('variables')))
+        with tf.compat.v1.Session() as temp_sess:
+            temp_sess.run(tf.compat.v1.global_variables_initializer())
+        var_col = self.nnet.graph.get_collection('variables')
+        self.sess.run(tf.compat.v1.variables_initializer(var_col))
 
     def train(self, examples):
         """
@@ -87,7 +88,7 @@ class NNetWrapper(NeuralNet):
         else:
             print("Checkpoint Directory exists! ")
         if self.saver == None:
-            self.saver = tf.train.Saver(self.nnet.graph.get_collection('variables'))
+            self.saver = tf.compat.v1.train.Saver(self.nnet.graph.get_collection('variables'))
         with self.nnet.graph.as_default():
             self.saver.save(self.sess, filepath)
 
@@ -96,5 +97,5 @@ class NNetWrapper(NeuralNet):
         if not os.path.exists(filepath + '.meta'):
             raise ("No model in path {}".format(filepath))
         with self.nnet.graph.as_default():
-            self.saver = tf.train.Saver()
+            self.saver = tf.compat.v1.train.Saver()
             self.saver.restore(self.sess, filepath)

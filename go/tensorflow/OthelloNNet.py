@@ -14,16 +14,16 @@ class OthelloNNet():
         # Renaming functions 
         Relu = tf.nn.relu
         Tanh = tf.nn.tanh
-        BatchNormalization = tf.layers.batch_normalization
-        Dropout = tf.layers.dropout
-        Dense = tf.layers.dense
+        BatchNormalization = tf.compat.v1.layers.batch_normalization
+        Dropout = tf.compat.v1.layers.dropout
+        Dense = tf.compat.v1.layers.dense
 
         # Neural Net
         self.graph = tf.Graph()
         with self.graph.as_default(): 
-            self.input_boards = tf.placeholder(tf.float32, shape=[None, self.board_x, self.board_y])    # s: batch_size x board_x x board_y
-            self.dropout = tf.placeholder(tf.float32)
-            self.isTraining = tf.placeholder(tf.bool, name="is_training")
+            self.input_boards = tf.compat.v1.placeholder(tf.float32, shape=[None, self.board_x, self.board_y])    # s: batch_size x board_x x board_y
+            self.dropout = tf.compat.v1.placeholder(tf.float32)
+            self.isTraining = tf.compat.v1.placeholder(tf.bool, name="is_training")
 
             x_image = tf.reshape(self.input_boards, [-1, self.board_x, self.board_y, 1])                    # batch_size  x board_x x board_y x 1
             h_conv1 = Relu(BatchNormalization(self.conv2d(x_image, args.num_channels, 'same'), axis=3, training=self.isTraining))     # batch_size  x board_x x board_y x num_channels
@@ -40,17 +40,17 @@ class OthelloNNet():
             self.calculate_loss()
 
     def conv2d(self, x, out_channels, padding):
-      return tf.layers.conv2d(x, out_channels, kernel_size=[3,3], padding=padding, use_bias=False)
+      return tf.compat.v1.layers.conv2d(x, out_channels, kernel_size=[3,3], padding=padding, use_bias=False)
 
     def calculate_loss(self):
-        self.target_pis = tf.placeholder(tf.float32, shape=[None, self.action_size])
-        self.target_vs = tf.placeholder(tf.float32, shape=[None])
-        self.loss_pi =  tf.losses.softmax_cross_entropy(self.target_pis, self.pi)
-        self.loss_v = tf.losses.mean_squared_error(self.target_vs, tf.reshape(self.v, shape=[-1,]))
+        self.target_pis = tf.compat.v1.placeholder(tf.float32, shape=[None, self.action_size])
+        self.target_vs = tf.compat.v1.placeholder(tf.float32, shape=[None])
+        self.loss_pi =  tf.compat.v1.losses.softmax_cross_entropy(self.target_pis, self.pi)
+        self.loss_v = tf.compat.v1.losses.mean_squared_error(self.target_vs, tf.reshape(self.v, shape=[-1,]))
         self.total_loss = self.loss_pi + self.loss_v
-        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        update_ops = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(update_ops):
-            self.train_step = tf.train.AdamOptimizer(self.args.lr).minimize(self.total_loss)
+            self.train_step = tf.compat.v1.train.AdamOptimizer(self.args.lr).minimize(self.total_loss)
 
 class ResNet():
     def __init__(self, game, args):
@@ -62,13 +62,13 @@ class ResNet():
         # Neural Net
         self.graph = tf.Graph()
         with self.graph.as_default(): 
-            self.input_boards = tf.placeholder(tf.float32, shape=[None, self.board_x, self.board_y])    # s: batch_size x board_x x board_y
-            self.dropout = tf.placeholder(tf.float32)
-            self.isTraining = tf.placeholder(tf.bool, name="is_training")
+            self.input_boards = tf.compat.v1.placeholder(tf.float32, shape=[None, self.board_x, self.board_y])    # s: batch_size x board_x x board_y
+            self.dropout = tf.compat.v1.placeholder(tf.float32)
+            self.isTraining = tf.compat.v1.placeholder(tf.bool, name="is_training")
 
             x_image = tf.reshape(self.input_boards, [-1, self.board_x, self.board_y, 1])                    # batch_size  x board_x x board_y x 1
-            x_image = tf.layers.conv2d(x_image, args.num_channels, kernel_size=(3, 3), strides=(1, 1),name='conv',padding='same',use_bias=False)
-            x_image = tf.layers.batch_normalization(x_image, axis=1, name='conv_bn', training=self.isTraining)
+            x_image = tf.compat.v1.layers.conv2d(x_image, args.num_channels, kernel_size=(3, 3), strides=(1, 1),name='conv',padding='same',use_bias=False)
+            x_image = tf.compat.v1.layers.batch_normalization(x_image, axis=1, name='conv_bn', training=self.isTraining)
             x_image = tf.nn.relu(x_image)
 
             residual_tower = self.residual_block(inputLayer=x_image, kernel_size=3, filters=args.num_channels, stage=1, block='a')
@@ -91,20 +91,20 @@ class ResNet():
             residual_tower = self.residual_block(inputLayer=residual_tower, kernel_size=3, filters=args.num_channels, stage=18, block='t')
             residual_tower = self.residual_block(inputLayer=residual_tower, kernel_size=3, filters=args.num_channels, stage=19, block='u')
 
-            policy = tf.layers.conv2d(residual_tower, 2,kernel_size=(1, 1), strides=(1, 1),name='pi',padding='same',use_bias=False)
-            policy = tf.layers.batch_normalization(policy, axis=3, name='bn_pi', training=self.isTraining)
+            policy = tf.compat.v1.layers.conv2d(residual_tower, 2,kernel_size=(1, 1), strides=(1, 1),name='pi',padding='same',use_bias=False)
+            policy = tf.compat.v1.layers.batch_normalization(policy, axis=3, name='bn_pi', training=self.isTraining)
             policy = tf.nn.relu(policy)
-            policy = tf.layers.flatten(policy, name='p_flatten')
-            self.pi = tf.layers.dense(policy, self.action_size)
+            policy = tf.compat.v1.layers.flatten(policy, name='p_flatten')
+            self.pi = tf.compat.v1.layers.dense(policy, self.action_size)
             self.prob = tf.nn.softmax(self.pi)
 
-            value = tf.layers.conv2d(residual_tower, 1,kernel_size=(1, 1), strides=(1, 1),name='v',padding='same',use_bias=False)
-            value = tf.layers.batch_normalization(value, axis=3, name='bn_v', training=self.isTraining)
+            value = tf.compat.v1.layers.conv2d(residual_tower, 1,kernel_size=(1, 1), strides=(1, 1),name='v',padding='same',use_bias=False)
+            value = tf.compat.v1.layers.batch_normalization(value, axis=3, name='bn_v', training=self.isTraining)
             value = tf.nn.relu(value)
-            value = tf.layers.flatten(value, name='v_flatten')
-            value = tf.layers.dense(value, units=256)
+            value = tf.compat.v1.layers.flatten(value, name='v_flatten')
+            value = tf.compat.v1.layers.dense(value, units=256)
             value = tf.nn.relu(value)
-            value = tf.layers.dense(value, 1)
+            value = tf.compat.v1.layers.dense(value, 1)
             self.v = tf.nn.tanh(value) 
                                                               
             self.calculate_loss()
@@ -115,24 +115,24 @@ class ResNet():
 
         shortcut = inputLayer
 
-        residual_layer = tf.layers.conv2d(inputLayer, filters,kernel_size=(kernel_size, kernel_size), strides=(1, 1),name=conv_name+'2a',padding='same',use_bias=False)
-        residual_layer = tf.layers.batch_normalization(residual_layer, axis=3, name=bn_name+'2a', training=self.isTraining)
+        residual_layer = tf.compat.v1.layers.conv2d(inputLayer, filters,kernel_size=(kernel_size, kernel_size), strides=(1, 1),name=conv_name+'2a',padding='same',use_bias=False)
+        residual_layer = tf.compat.v1.layers.batch_normalization(residual_layer, axis=3, name=bn_name+'2a', training=self.isTraining)
         residual_layer = tf.nn.relu(residual_layer)
-        residual_layer = tf.layers.conv2d(residual_layer, filters,kernel_size=(kernel_size, kernel_size), strides=(1, 1),name=conv_name+'2b',padding='same',use_bias=False)
-        residual_layer = tf.layers.batch_normalization(residual_layer, axis=3, name=bn_name+'2b', training=self.isTraining)
+        residual_layer = tf.compat.v1.layers.conv2d(residual_layer, filters,kernel_size=(kernel_size, kernel_size), strides=(1, 1),name=conv_name+'2b',padding='same',use_bias=False)
+        residual_layer = tf.compat.v1.layers.batch_normalization(residual_layer, axis=3, name=bn_name+'2b', training=self.isTraining)
         add_shortcut = tf.add(residual_layer, shortcut)
         residual_result = tf.nn.relu(add_shortcut)
         
         return residual_result
 
     def calculate_loss(self):
-        self.target_pis = tf.placeholder(tf.float32, shape=[None, self.action_size])
-        self.target_vs = tf.placeholder(tf.float32, shape=[None])
-        self.loss_pi =  tf.losses.softmax_cross_entropy(self.target_pis, self.pi)
-        self.loss_v = tf.losses.mean_squared_error(self.target_vs, tf.reshape(self.v, shape=[-1,]))
+        self.target_pis = tf.compat.v1.placeholder(tf.float32, shape=[None, self.action_size])
+        self.target_vs = tf.compat.v1.placeholder(tf.float32, shape=[None])
+        self.loss_pi =  tf.compat.v1.losses.softmax_cross_entropy(self.target_pis, self.pi)
+        self.loss_v = tf.compat.v1.losses.mean_squared_error(self.target_vs, tf.reshape(self.v, shape=[-1,]))
         self.total_loss = self.loss_pi + self.loss_v
-        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        update_ops = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(update_ops):
-            self.train_step = tf.train.AdamOptimizer(self.args.lr).minimize(self.total_loss)
+            self.train_step = tf.compat.v1.train.AdamOptimizer(self.args.lr).minimize(self.total_loss)
 
 

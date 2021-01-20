@@ -2,7 +2,7 @@ from __future__ import print_function
 import sys
 sys.path.append('..')
 from Game import Game
-from .OthelloLogic import Board
+# from .OthelloLogic import Board
 import numpy as np
 
 class OthelloGame(Game):
@@ -18,6 +18,7 @@ class OthelloGame(Game):
 
     def __init__(self, n):
         self.n = n
+        self.env = gym.make('gym_go:go-v0', size=7, komi=0, reward_method='real')
 
     def getInitBoard(self):
         # return initial board (numpy board)
