@@ -73,7 +73,7 @@ class MCTS():
         """
 
         s = self.game.stringRepresentation(canonicalBoard)
-
+        # print(s)
         if s not in self.Es:
             self.Es[s] = self.game.getGameEnded(canonicalBoard, 1)
         if self.Es[s] != 0:
@@ -82,6 +82,7 @@ class MCTS():
 
         if s not in self.Ps:
             # leaf node
+            # print("LEAF NODE")
             self.Ps[s], v = self.nnet.predict(canonicalBoard)
             valids = self.game.getValidMoves(canonicalBoard, 1)
             self.Ps[s] = self.Ps[s] * valids  # masking invalid moves
@@ -120,7 +121,7 @@ class MCTS():
 
         a = best_act
         next_s, next_player = self.game.getNextState(canonicalBoard, 1, a)
-        next_s = self.game.getCanonicalForm(next_s, next_player)
+        next_s = self.game.getCanonicalForm(next_s, None)
 
         v = self.search(next_s)
 

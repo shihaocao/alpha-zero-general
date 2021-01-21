@@ -5,6 +5,8 @@ from Game import Game
 # from .OthelloLogic import Board
 import numpy as np
 import gym
+from gym_go import gogame
+from gym_go import govars
 
 class GoGame(Game):
     square_content = {
@@ -19,33 +21,24 @@ class GoGame(Game):
         # return OthelloGame.square_content[piece]
 
     def __init__(self, n):
-        self.n = n
-        self.env = gym.make('gym_go:go-v0', size=7, komi=0, reward_method='real')
-        self.env.seed(123)
-        
-        self.state = None
-        self.reward = None
-        self.player = None
-        self.terminal = None
-        self.info = None
-        
-        self.flat_move_size = int(n*n)+1
-        self.state = self.env.reset()
+        self.size = n
+        self.komi = 3.5
         
     def getInitBoard(self):
         # return initial board (numpy board)
         
-        return self.state
+        return gogame.init_state(self.size)
 
     def getBoardSize(self):
         # (a,b) tuple
-        return (self.n, self.n)
+        return (self.size, self.size)
 
     def getActionSize(self):
         # return number of actions
-        return self.n*self.n + 1
+        return self.size*self.size + 1
 
-    def getNextState(self, board, player, action):
+    def getNextState(self, game_state, player, action):
+    # def getCanonicalState(self, game_state, action):
         # if player takes action on board, return next (board,player)
         # action must be a valid move
         # if action == self.n*self.n:
@@ -54,58 +47,67 @@ class GoGame(Game):
         # b.pieces = np.copy(board)
         # move = (int(action/self.n), action%self.n)
         # b.execute_move(move, player)
-        
-        self.state, self.reward, self.terminal, self.info = self.env.step(action)
-    
-        return self.state, self.state[2][0][0]
+        if isinstance(action, tuple) or isinstance(action, list) or isinstance(action, np.ndarray):
+            assert 0 <= action[0] < self.size
+            assert 0 <= action[1] < self.size
+            action = self.size * action[0] + action[1]
+        elif action is None:
+            action = self.size ** 2
 
-    def getValidMoves(self, board, player):
-        s = self.state
-        
-        b_pieces = np.array(s[0], dtype=int)
-        w_pieces = np.array(s[1], dtype=int)
-        ko_illegals = np.array(s[3], dtype=int)
+        return gogame.next_state(game_state, action, canonical=False), None
+        # self.done = gogame.game_ended(self.state_)
+        # return np.copy(self.state_), self.reward(), self.done, self.info()
+
+    def getValidMoves(self, game_state, player):        
+        b_pieces = np.array(game_state[govars.WHITE], dtype=int)
+        w_pieces = np.array(game_state[govars.BLACK], dtype=int)
+        ko_illegals = np.array(game_state[govars.INVD_CHNL], dtype=int)
 
         invalid_moves = np.bitwise_or(b_pieces,w_pieces)
         invalid_moves = np.bitwise_or(invalid_moves,ko_illegals)
         invalid_moves = np.clip(invalid_moves, 0, 1) # .reshape((self.flat_move_size,1))
-        # print(invalid_moves)
         
-        invalid_moves = np.bitwise_not(invalid_moves)+2
+        invalid_moves = 1-invalid_moves
         invalid_moves = np.append(invalid_moves.flatten(),1) #pass is always valid
-        # print(invalid_moves)
         
         return invalid_moves
 
-    def getGameEnded(self, board, player):
-        # # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
-        # # player = 1
-        # b = Board(self.n)
-        # b.pieces = np.copy(board)
-        # if b.has_legal_moves(player):
-        #     return 0
-        # if b.has_legal_moves(-player):
-        #     return 0
-        # if b.countDiff(player) > 0:
-        #     return 1
-        # return -1
-        
-        if self.terminal:
-            if player:
-                return self.reward
-            else:
-                return -self.reward
+    def winning(self, game_state):
+        """
+        :return: Who's currently winning in BLACK's perspective, regardless if the game is over
+        """
+        return gogame.winning(game_state, self.komi)
+
+    def winner(self, game_state, player):
+        """
+        Get's the winner in BLACK's perspective
+        :return:
+        """
+
+        if self.game_ended(game_state):
+            return self.winning(game_state)
         else:
             return 0
 
-    def getCanonicalForm(self, board, player):
+    def game_ended(self, game_state):
+        if gogame.game_ended(game_state):
+            return True
+        return False
+
+    def getGameEnded(self, game_state, player):
+        '''
+        black pov
+        '''
+        return self.winner(game_state, player)
+
+    def getCanonicalForm(self, game_state, player):
         # return state if player==1, else return -state if player==-1
-        return self.state
+        return gogame.canonical_form(game_state)
 
     def getSymmetries(self, board, pi):
         # mirror, rotational
-        assert(len(pi) == self.n**2+1)  # 1 for pass
-        pi_board = np.reshape(pi[:-1], (self.n, self.n))
+        assert(len(pi) == self.size**2+1)  # 1 for pass
+        pi_board = np.reshape(pi[:-1], (self.size, self.size))
         l = []
 
         for i in range(1, 5):
@@ -119,9 +121,9 @@ class GoGame(Game):
         return l
 
     def stringRepresentation(self, board):
-        return "".join([str(x) for x in board.astype(dtype=int).flatten()])
-        # CAN COLLAPSE INDICATOR LAYERS
-
+        board_s = "".join(str(x) for x in np.array(board, dtype=int).flatten())
+        return board_s
+    
     def stringRepresentationReadable(self, board):
         board_s = "".join(self.square_content[square] for row in board for square in row)
         return board_s
