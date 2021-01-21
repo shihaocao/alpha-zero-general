@@ -52,7 +52,7 @@ class MCTS():
         probs = [x / counts_sum for x in counts]
         return probs
 
-    def search(self, canonicalBoard):
+    def search(self, canonicalState):
         """
         This function performs one iteration of MCTS. It is recursively called
         till a leaf node is found. The action chosen at each node is one that
@@ -71,19 +71,19 @@ class MCTS():
         Returns:
             v: the negative of the value of the current canonicalBoard
         """
-
-        s = self.game.stringRepresentation(canonicalBoard)
+        
+        s = self.game.stringRepresentation(canonicalState)
 
         if s not in self.Es:
-            self.Es[s] = self.game.getGameEnded(canonicalBoard, 1)
+            self.Es[s] = self.game.getGameEnded(canonicalState, 1)
         if self.Es[s] != 0:
             # terminal node
             return -self.Es[s]
 
         if s not in self.Ps:
             # leaf node
-            self.Ps[s], v = self.nnet.predict(canonicalBoard)
-            valids = self.game.getValidMoves(canonicalBoard, 1)
+            self.Ps[s], v = self.nnet.predict(canonicalState.canonical_state())
+            valids = self.game.getValidMoves(canonicalState, 1)
             self.Ps[s] = self.Ps[s] * valids  # masking invalid moves
             sum_Ps_s = np.sum(self.Ps[s])
             if sum_Ps_s > 0:

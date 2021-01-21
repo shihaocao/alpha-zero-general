@@ -100,7 +100,10 @@ class GoGame(Game):
 
     def getCanonicalForm(self, board, player):
         # return state if player==1, else return -state if player==-1
-        return self.state
+        return
+    
+    def getCanonicalState(self):
+        return self.env.getCanonicalState()
 
     def getSymmetries(self, board, pi):
         # mirror, rotational
@@ -118,10 +121,12 @@ class GoGame(Game):
                 l += [(newB, list(newPi.ravel()) + [pi[-1]])]
         return l
 
-    def stringRepresentation(self, board):
-        return "".join([str(x) for x in board.astype(dtype=int).flatten()])
+    def stringRepresentation(self, env_state):
+        # board = env_state.
+        # return "".join([str(x) for x in board.astype(dtype=int).flatten()])
         # CAN COLLAPSE INDICATOR LAYERS
-
+        return str(env_state)
+    
     def stringRepresentationReadable(self, board):
         board_s = "".join(self.square_content[square] for row in board for square in row)
         return board_s
