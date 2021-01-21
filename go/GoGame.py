@@ -5,6 +5,9 @@ from Game import Game
 # from .OthelloLogic import Board
 import numpy as np
 import gym
+import gym_go
+from gym_go import gogame
+from gym_go import govars
 
 class GoGame(Game):
     square_content = {
@@ -21,21 +24,12 @@ class GoGame(Game):
     def __init__(self, n):
         self.n = n
         self.env = gym.make('gym_go:go-v0', size=7, komi=0, reward_method='real')
-        self.env.seed(123)
-        
-        self.state = None
-        self.reward = None
-        self.player = None
-        self.terminal = None
-        self.info = None
-        
-        self.flat_move_size = int(n*n)+1
-        self.state = self.env.reset()
-        
+        # self.env.seed(123)
+                
     def getInitBoard(self):
         # return initial board (numpy board)
         
-        return self.state
+        return gogame.init_state(self.n)
 
     def getBoardSize(self):
         # (a,b) tuple
@@ -45,7 +39,7 @@ class GoGame(Game):
         # return number of actions
         return self.n*self.n + 1
 
-    def getNextState(self, board, player, action):
+    def getNextState(self, game_state, player, action):
         # if player takes action on board, return next (board,player)
         # action must be a valid move
         # if action == self.n*self.n:
@@ -55,9 +49,12 @@ class GoGame(Game):
         # move = (int(action/self.n), action%self.n)
         # b.execute_move(move, player)
         
-        self.state, self.reward, self.terminal, self.info = self.env.step(action)
+        self.env.state = game_state
+        self.env.state[2] = np.array((self.n,self.n)).fill(player)
+        print(f"player: {player}")
+        # self.state = self.env.step(action)
     
-        return self.state, self.state[2][0][0]
+        return self.env.action()
 
     def getValidMoves(self, board, player):
         s = self.state
