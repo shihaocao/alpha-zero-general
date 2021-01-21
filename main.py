@@ -35,7 +35,7 @@ def main():
     np.random.seed(123)
     
     log.info('Loading %s...', Game.__name__)
-    g = Game(6)
+    g = Game(7)
 
     log.info('Loading %s...', nn.__name__)
     nnet = nn(g)

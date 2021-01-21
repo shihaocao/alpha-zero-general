@@ -57,7 +57,7 @@ class GoGame(Game):
         
         self.state, self.reward, self.terminal, self.info = self.env.step(action)
     
-        return self.state
+        return self.state, self.state[2][0][0]
 
     def getValidMoves(self, board, player):
         s = self.state
