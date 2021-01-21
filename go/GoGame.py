@@ -69,9 +69,11 @@ class GoGame(Game):
         invalid_moves = np.bitwise_or(b_pieces,w_pieces)
         invalid_moves = np.bitwise_or(invalid_moves,ko_illegals)
         invalid_moves = np.clip(invalid_moves, 0, 1) # .reshape((self.flat_move_size,1))
-
-        invalid_moves = np.bitwise_not(invalid_moves)
+        # print(invalid_moves)
+        
+        invalid_moves = np.bitwise_not(invalid_moves)+2
         invalid_moves = np.append(invalid_moves.flatten(),1) #pass is always valid
+        # print(invalid_moves)
         
         return invalid_moves
 
