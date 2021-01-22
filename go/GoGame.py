@@ -54,7 +54,13 @@ class GoGame(Game):
         elif action is None:
             action = self.size ** 2
 
-        return gogame.next_state(game_state, action, canonical=False), None
+        next_state = gogame.next_state(game_state, action, canonical=False)
+        
+        if next_state[govars.TURN_CHNL][0][0]:
+            p = 1
+        else:
+            p = -1
+        return next_state, p
         # self.done = gogame.game_ended(self.state_)
         # return np.copy(self.state_), self.reward(), self.done, self.info()
 
