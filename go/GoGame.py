@@ -4,7 +4,6 @@ sys.path.append('..')
 from Game import Game
 # from .OthelloLogic import Board
 import numpy as np
-import gym
 from gym_go import gogame
 from gym_go import govars
 
